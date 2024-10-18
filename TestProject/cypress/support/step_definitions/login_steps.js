@@ -8,6 +8,7 @@ import attributes from "../../../attributes";
 let user;
 let registrationResponse;
 let loginResponse;
+let credentials = {};
 
 Given('I have valid user data', () => {
     user = {
@@ -22,10 +23,18 @@ Given('I have valid user data', () => {
         phoneNumber: Cypress.env('phoneNumber'),
         ssn: Cypress.env('ssn'),
     };
+    credentials = {
+        username: user.username,
+        password: user.password
+    };
 });
 
 When('I send a POST request to the registration endpoint with the user data', () => {
-    cy.request('POST', 'https://parabank.parasoft.com/parabank/register', user).then((response) => {
+    const url = `https://parabank.parasoft.com/parabank/register/${user.username}/${user.password}/${user.firstName}/${user.lastName}/${user.address}/${user.city}/${user.state}/${user.zipCode}/${user.phoneNumber}/${user.ssn}`;
+    cy.request({
+        method: 'POST',
+        url: url
+    }).then((response) => {
         registrationResponse = response;
     });
 });
@@ -39,12 +48,16 @@ Then('The response should contain the newly registered user details', () => {
 });
 
 Given('I have registered user credentials', () => {
-    // Previous scenario should have registered the user, using the same user data
-    // Assume that user is already registered and available in the `user` variable
+    expect(credentials).to.have.property('username');
+    expect(credentials).to.have.property('password');
 });
 
 When('I send a POST request to the login endpoint with the credentials', () => {
-    cy.request('POST', 'https://parabank.parasoft.com/parabank/login', user.username, user.password).then((response) => {
+    const url = `https://parabank.parasoft.com/parabank/login/${credentials.username}/${credentials.password}`;
+    cy.request({
+        method: 'POST',
+        url: url
+    }).then((response) => {
         loginResponse = response;
     });
 });
